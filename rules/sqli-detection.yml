@@ -1,0 +1,24 @@
+# rules/sqli_detection.yml
+title: SQL Injection Successful Login Detection
+id: sqli-login-bypass-001
+status: stable
+description: Detecta cuando un usuario logra autenticarse usando SQL injection
+author: Dylan Riquelme
+date: 2025-10-15
+
+logsource:
+  product: vulnerable_webapp
+  service: authentication
+
+detection:
+  selection_sqli_chars:
+    event_type: 'database_query'
+    suspicious_chars: true
+  
+  selection_success:
+    event_type: 'authentication_success'
+    method: 'sqli'
+  
+#  condition: selection_sqli_chars and selection_success
+
+level: critical
