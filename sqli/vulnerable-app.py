@@ -1,4 +1,3 @@
-# vulnerable_app.py
 from flask import Flask, request, render_template_string, jsonify
 import sqlite3
 import json

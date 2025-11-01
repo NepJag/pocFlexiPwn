@@ -1,8 +1,6 @@
-# run_poc.py
 import subprocess
 import time
 import os
-import signal
 
 def cleanup():
     """Limpia archivos temporales"""
