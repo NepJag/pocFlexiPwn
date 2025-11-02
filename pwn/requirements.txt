@@ -1,0 +1,4 @@
+inotify-simple==2.0.1
+pyaml==25.7.0
+PyYAML==6.0.3
+watchdog==6.0.0

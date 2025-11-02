@@ -1,0 +1,25 @@
+title: Privilege Escalation via File Creation Detection
+id: privesc-file-001
+status: stable
+description: Detecta cuando se logra crear/modificar archivos privilegiados
+author: Dylan Riquelme
+date: 2025-11-01
+
+targets:
+  # Archivos que indican escalación exitosa
+  - path: "/root/pwned.txt"
+    events: ["CREATE", "MODIFY"]
+    description: "Archivo creado en directorio root"
+
+  - path: "/etc/passwd"
+    events: ["MODIFY"]
+    description: "Modificación del archivo de usuarios"
+
+  - path: "/etc/shadow"
+    events: ["MODIFY", "ATTRIB"]
+    description: "Acceso al archivo de contraseñas"
+
+# Condición: cualquiera de los targets se cumple
+condition: any
+
+level: critical
