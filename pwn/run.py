@@ -5,42 +5,13 @@ PoC Runner - Sistema de Detección de Cambios en Filesystem
 
 import subprocess
 import time
-import shutil
-from pathlib import Path
-
 
 def cleanup():
     """Limpia recursos previos"""
-    # Detener contenedor si existe
     subprocess.run(['docker', 'stop', 'vuln-privesc'],
                    stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
     subprocess.run(['docker', 'rm', 'vuln-privesc'],
                    stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
-
-    # Limpiar directorio monitoreado
-    monitor_path = Path('./monitored_fs')
-    if monitor_path.exists():
-        shutil.rmtree(monitor_path)
-
-
-def setup():
-    """Prepara el entorno"""
-    print("🔧 Preparando entorno...\n")
-
-    # Crear directorio de monitoreo
-    monitor_path = Path('./monitored_fs')
-    monitor_path.mkdir(exist_ok=True)
-
-    # Estructura de directorios esperada
-    (monitor_path / 'root').mkdir(exist_ok=True)
-    (monitor_path / 'etc').mkdir(exist_ok=True)
-
-    # Crear archivos base
-    (monitor_path / 'etc/passwd').write_text("root:x:0:0:root:/root:/bin/bash\n")
-
-    print(f"✓ Directorio de monitoreo: {monitor_path.absolute()}\n")
-
-    return monitor_path
 
 
 def build_container():
@@ -60,60 +31,42 @@ def build_container():
     return True
 
 
-def start_container(monitor_path):
-    """Inicia el contenedor vulnerable"""
-    print("🚀 Iniciando contenedor vulnerable...")
-
-    # Bind mount del filesystem a monitorear
-    result = subprocess.Popen([
-        'docker', 'run', '-it',
-        '--name', 'vuln-privesc',
-        '-v', f'{monitor_path.absolute()}/root:/root',
-        '-v', f'{monitor_path.absolute()}/etc:/etc_shared',
-        'vuln-privesc'
-    ])
-
-    return result
-
-
 def main():
-    print("🎯 PoC: Detección de Cambios en Filesystem\n")
+    print("🎯 PoC: Detección Genérica de Privilege Escalation\n")
     print("=" * 60 + "\n")
 
-    # Limpieza
     cleanup()
 
-    # Setup
-    monitor_path = setup()
-
-    # Build
     if not build_container():
         return
 
-    # Iniciar monitor en background
     print("👁️  Iniciando monitor de filesystem...\n")
     monitor_process = subprocess.Popen([
         'python3', 'monitor.py',
         'rules/privesc-detection.yml',
-        str(monitor_path.absolute())
+        'vuln-privesc'
     ])
 
     time.sleep(2)
 
-    # Instrucciones
     print("\n" + "=" * 60)
     print("✨ PoC Listo - Sistema de Monitoreo Activo")
     print("=" * 60)
     print("\n📍 Iniciar contenedor en otra terminal:")
-    print(f"   docker run -it --name vuln-privesc \\")
-    print(f"     -v {monitor_path.absolute()}/root:/root \\")
-    print(f"     vuln-privesc")
-    print("\n🎯 Objetivo: Crear el archivo /root/pwned.txt")
+    print("   docker run -it --name vuln-privesc vuln-privesc")
+    print("\n🎯 Objetivos posibles (cualquiera activa la detección):")
+    print("   1. Crear cualquier archivo .txt en /root/")
+    print("   2. Modificar /etc/passwd")
+    print("   3. Modificar /etc/shadow")
+    print("   4. Agregar clave SSH en /root/.ssh/authorized_keys")
     print("\n💡 Pistas:")
-    print("   1. Revisa permisos sudo: sudo -l")
-    print("   2. Vim puede ejecutar comandos: :!comando")
-    print("   3. Desde vim con sudo: :!touch /root/pwned.txt")
-    print("\n⏳ El monitor detectará automáticamente el cambio...\n")
+    print("   • Revisa permisos sudo: sudo -l")
+    print("   • Vim puede ejecutar comandos: :!comando")
+    print("   • Ejemplos desde vim con sudo:")
+    print("     :!touch /root/pwned.txt")
+    print("     :!echo 'hacked' > /root/exploit.txt")
+    print("     :!vim /etc/passwd")
+    print("\n⏳ El monitor detectará automáticamente cualquier cambio...\n")
 
     try:
         monitor_process.wait()
