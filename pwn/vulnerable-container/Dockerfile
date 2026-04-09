@@ -22,8 +22,7 @@ RUN mkdir -p /monitored && chmod 755 /monitored
 USER ctfuser
 WORKDIR /home/ctfuser
 
-# Mensaje de bienvenida
-RUN echo 'echo "🎯 Objetivo: Crear el archivo /root/pwned.txt"' >> ~/.bashrc
-RUN echo 'echo "💡 Pista: Revisa tus permisos sudo con: sudo -l"' >> ~/.bashrc
+HEALTHCHECK --interval=2s --timeout=2s --start-period=3s --retries=3 \                                       
+      CMD id ctfuser
 
 CMD ["/bin/bash"]
